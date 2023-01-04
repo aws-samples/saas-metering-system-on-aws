@@ -97,6 +97,14 @@ class MergeSmallFilesLambdaStack(Stack):
     merge_small_files_lambda_fn.add_to_role_policy(aws_iam.PolicyStatement(
       effect=aws_iam.Effect.ALLOW,
       resources=["*"],
+      actions=["kms:GenerateDataKey",
+        "kms:Decrypt",
+        "kms:Encrypt"
+      ]))
+
+    merge_small_files_lambda_fn.add_to_role_policy(aws_iam.PolicyStatement(
+      effect=aws_iam.Effect.ALLOW,
+      resources=["*"],
       actions=["lakeformation:GetDataAccess"]))
 
     lambda_fn_target = aws_events_targets.LambdaFunction(merge_small_files_lambda_fn)
@@ -107,6 +115,7 @@ class MergeSmallFilesLambdaStack(Stack):
 
     log_group = aws_logs.LogGroup(self, "MergeSmallFilesLogGroup",
       log_group_name=f"/aws/lambda/{self.stack_name}/MergeSmallFiles",
+      removal_policy=cdk.RemovalPolicy.DESTROY, #TODO: for testing
       retention=aws_logs.RetentionDays.THREE_DAYS)
     log_group.grant_write(merge_small_files_lambda_fn)
 

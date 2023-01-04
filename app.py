@@ -4,6 +4,7 @@ import os
 import aws_cdk as cdk
 
 from saas_metering_demo import (
+  KmsKeyStack,
   KinesisFirehoseStack,
   RandomGenApiStack,
   VpcStack,
@@ -20,11 +21,13 @@ app = cdk.App()
 vpc_stack = VpcStack(app, 'SaaSMeteringDemoVpc',
   env=AWS_ENV)
 
-firehose_stack = KinesisFirehoseStack(app, 'RandomGenApiLogToFirehose')
+kms_key_stack = KmsKeyStack(app, 'SaaSMeteringKmsKey')
+firehose_stack = KinesisFirehoseStack(app, 'RandomGenApiLogToFirehose', kms_key_stack.kms_key.key_arn)
 random_gen_apigw = RandomGenApiStack(app, 'RandomGenApiGw', firehose_stack.firehose_arn)
 
 athena_work_group_stack = AthenaWorkGroupStack(app,
-  'SaaSMeteringAthenaWorkGroup'
+  'SaaSMeteringAthenaWorkGroup',
+  kms_key_stack.kms_key.key_arn
 )
 
 merge_small_files_stack = MergeSmallFilesLambdaStack(app,

@@ -18,7 +18,7 @@ random.seed(31)
 
 class AthenaWorkGroupStack(Stack):
 
-  def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+  def __init__(self, scope: Construct, construct_id: str, awskms_key_arn, **kwargs) -> None:
     super().__init__(scope, construct_id, **kwargs)
 
     ATHENA_WORK_GROUP_NAME = self.node.try_get_context('athena_work_group_name')
@@ -53,6 +53,10 @@ class AthenaWorkGroupStack(Stack):
         publish_cloud_watch_metrics_enabled=True,
         requester_pays_enabled=True,
         result_configuration=aws_athena.CfnWorkGroup.ResultConfigurationProperty(
+          encryption_configuration=aws_athena.CfnWorkGroup.EncryptionConfigurationProperty(
+            encryption_option='SSE_KMS',
+            kms_key=awskms_key_arn
+          ),
           output_location=s3_bucket.s3_url_for_object()
         )
       )

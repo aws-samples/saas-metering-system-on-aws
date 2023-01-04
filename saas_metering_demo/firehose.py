@@ -19,7 +19,7 @@ from aws_cdk.aws_kinesisfirehose import CfnDeliveryStream as firehose_cfn
 
 class KinesisFirehoseStack(Stack):
 
-  def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+  def __init__(self, scope: Construct, construct_id: str, awskms_key_arn, **kwargs) -> None:
     super().__init__(scope, construct_id, **kwargs)
 
     S3_BUCKET_SUFFIX = ''.join(random.sample((string.ascii_lowercase + string.digits), k=7))
@@ -83,6 +83,14 @@ class KinesisFirehoseStack(Stack):
       actions=["logs:PutLogEvents"]
     ))
 
+    firehose_role_policy_doc.add_statements(aws_iam.PolicyStatement(
+      effect=aws_iam.Effect.ALLOW,
+      resources=["*"],
+      actions=["kms:GenerateDataKey",
+        "kms:Decrypt",
+        "kms:Encrypt"
+      ]))
+
     firehose_role = aws_iam.Role(self, "KinesisFirehoseDeliveryRole",
       role_name="FirehoseRole-{stream_name}-{region}".format(
         stream_name='random-gen', region=cdk.Aws.REGION),
@@ -91,6 +99,12 @@ class KinesisFirehoseStack(Stack):
       inline_policies={
         "firehose_role_policy": firehose_role_policy_doc
       }
+    )
+
+    encryption_config_prop = firehose_cfn.EncryptionConfigurationProperty(
+      kms_encryption_config=firehose_cfn.KMSEncryptionConfigProperty(
+        awskms_key_arn=awskms_key_arn
+      )
     )
 
     ext_s3_dest_config = firehose_cfn.ExtendedS3DestinationConfigurationProperty(
@@ -112,6 +126,7 @@ class KinesisFirehoseStack(Stack):
       dynamic_partitioning_configuration={
         "enabled": False
       },
+      encryption_configuration=encryption_config_prop,
       error_output_prefix=FIREHOSE_TO_S3_ERROR_OUTPUT_PREFIX,
       prefix=FIREHOSE_TO_S3_PREFIX
     )
