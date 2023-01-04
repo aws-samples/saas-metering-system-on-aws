@@ -1,11 +1,248 @@
-## My Project
 
-TODO: Fill this README out!
+# SaaS Metering system on AWS demo project!
 
-Be sure to:
+This repository provides you cdk scripts and sample codes on how to implement a simple SaaS metering system.
 
-* Change the title in this README
-* Edit your repository description on GitHub
+Below diagram shows what we are implementing.
+
+![saas-metering-arch](./saas-metering-arch.svg)
+
+The `cdk.json` file tells the CDK Toolkit how to execute your app.
+
+This project is set up like a standard Python project.  The initialization
+process also creates a virtualenv within this project, stored under the `.venv`
+directory.  To create the virtualenv it assumes that there is a `python3`
+(or `python` for Windows) executable in your path with access to the `venv`
+package. If for any reason the automatic creation of the virtualenv fails,
+you can create the virtualenv manually.
+
+To manually create a virtualenv on MacOS and Linux:
+
+```
+$ python3 -m venv .venv
+```
+
+After the init process completes and the virtualenv is created, you can use the following
+step to activate your virtualenv.
+
+```
+$ source .venv/bin/activate
+```
+
+If you are a Windows platform, you would activate the virtualenv like this:
+
+```
+% .venv\Scripts\activate.bat
+```
+
+Once the virtualenv is activated, you can install the required dependencies.
+
+```
+(.venv) $ pip install -r requirements.txt
+```
+
+### Deploy
+
+At this point you can now synthesize the CloudFormation template for this code.
+
+<pre>
+(.venv) $ export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+(.venv) $ export CDK_DEFAULT_REGION=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | jq -r .region)
+(.venv) $ cdk synth --all
+</pre>
+
+Use `cdk deploy` command to create the stack shown above.
+
+<pre>
+(.venv) $ cdk deploy --require-approval never --all
+</pre>
+
+To add additional dependencies, for example other CDK libraries, just add
+them to your `setup.py` file and rerun the `pip install -r requirements.txt`
+command.
+
+## Run Test
+
+1. Register a Cognito User, using the aws cli
+   <pre>
+   aws cognito-idp sign-up \
+     --client-id <i>your-user-pool-client-id</i> \
+     --username "<i>user-email-id@domain.com</i>" \
+     --password "<i>user-password</i>"
+   </pre>
+   Note: You can find `UserPoolClientId` with the following command:
+   <pre>
+   aws cloudformation describe-stacks --stack-name <i>your-cloudformation-stack-name</i> | jq -r '.Stacks[0].Outputs | map(select(.OutputKey == "UserPoolClientId")) | .[0].OutputValue'
+   </pre>
+
+2. Confirm the user, so they can log in:
+   <pre>
+   aws cognito-idp admin-confirm-sign-up \
+     --user-pool-id <i>your-user-pool-id</i> \
+     --username "<i>user-email-id@domain.com</i>"
+   </pre>
+   At this point if you look at your cognito user pool, you would see that the user is confirmed and ready to log in:
+   ![amazon-cognito-user-pool-users](./assets/amazon-cognito-user-pool-users.png)
+
+   Note: You can find `UserPoolId` with the following command:
+   <pre>
+   aws cloudformation describe-stacks --stack-name <i>your-cloudformation-stack-name</i> | jq -r '.Stacks[0].Outputs | map(select(.OutputKey == "UserPoolId")) | .[0].OutputValue'
+   </pre>
+
+3. Log the user in to get an identity JWT token
+   <pre>
+   aws cognito-idp initiate-auth \
+     --auth-flow USER_PASSWORD_AUTH \
+     --auth-parameters USERNAME="<i>user-email-id@domain.com</i>",PASSWORD="<i>user-password</i>" \
+     --client-id <i>your-user-pool-client-id</i>
+   </pre>
+
+4. Invoke REST API method
+   <pre>
+   $ MY_ID_TOKEN=$(aws cognito-idp initiate-auth --auth-flow USER_PASSWORD_AUTH --auth-parameters USERNAME="<i>user-email-id@domain.com</i>",PASSWORD="<i>user-password</i>" --client-id <i>your-user-pool-client-id</i> | jq -r '.AuthenticationResult.IdToken')
+   $ curl -X GET 'https://<i>{your-api-gateway-id}</i>.execute-api.<i>{region}</i>.amazonaws.com/prod/random/strings?len=7' --header "Authorization: ${MY_ID_TOKEN}"
+   </pre>
+
+   The response is:
+   <pre>
+   ["weBJDKv"]
+   </pre>
+
+5. Generate test requests and run them.
+   <pre>
+   $ source .venv/bin/activate
+   (.venv) $ pip install "requests==2.28.1"
+   (.venv) $ python tests/run_test.py --execution-id <i>{your-api-gateway-execution-id}</i> \
+                                      --region-name <i>{region}</i> \
+                                      --auth-token ${MY_ID_TOKEN} \
+                                      --max-count 10
+   </pre>
+
+6. Check the access logs in S3
+
+   After 5~10 minutes, you can see that the access logs have been delivered by **Kinesis Data Firehose** to **S3** and stored in a folder structure by year, month, day, and hour.
+
+   ![amazon-apigatewy-access-log-in-s3](./assets/amazon-apigatewy-access-log-in-s3.png)
+
+7. Creating and loading a table with partitioned data in Amazon Athena
+
+   Go to [Athena](https://console.aws.amazon.com/athena/home) on the AWS Management console.<br/>
+   * (step 1) Create a database
+
+     In order to create a new database called `mydatabase`, enter the following statement in the Athena query editor
+     and click the **Run** button to execute the query.
+
+     <pre>
+     CREATE DATABASE mydatabase
+     </pre>
+
+    * (step 2) Create a table
+
+      Copy the following query into the Athena query editor, replace the `xxxxxxx` in the last line under `LOCATION` with the string of your S3 bucket, and execute the query to create a new table.
+      <pre>
+      CREATE EXTERNAL TABLE `mydatabase.restapi_access_log_json`(
+        `requestId` string,
+        `ip` string,
+        `user` string,
+        `requestTime` timestamp,
+        `httpMethod` string,
+        `resourcePath` string,
+        `status` string,
+        `protocol` string,
+        `responseLength` integer)
+      PARTITIONED BY (
+        `year` int,
+        `month` int,
+        `day` int,
+        `hour` int)
+      ROW FORMAT SERDE
+        'org.openx.data.jsonserde.JsonSerDe'
+      STORED AS INPUTFORMAT
+        'org.apache.hadoop.mapred.TextInputFormat'
+      OUTPUTFORMAT
+        'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
+      LOCATION
+        's3://apigw-access-log-to-firehose-<i>xxxxx</i>/json-data'
+      </pre>
+      If the query is successful, a table named `restapi_access_log_json` is created and displayed on the left panel under the **Tables** section.
+
+      If you get an error, check if (a) you have updated the `LOCATION` to the correct S3 bucket name, (b) you have mydatabase selected under the Database dropdown, and (c) you have `AwsDataCatalog` selected as the **Data source**.
+
+    * (step 3) Load the partition data
+
+      Run the following query to load the partition data.
+      <pre>
+      MSCK REPAIR TABLE mydatabase.restapi_access_log_json;
+      </pre>
+      After you run this command, the data is ready for querying.
+
+8. Run test query
+
+   Enter the following SQL statement and execute the query.
+   <pre>
+   SELECT COUNT(*)
+   FROM mydatabase.restapi_access_log_json;
+   </pre>
+
+9.  Merge small files into large one
+
+    When real-time incoming data is stored in S3 using Kinesis Data Firehose, files with small data size are created.<br/>
+    To improve the query performance of Amazon Athena, it is recommended to combine small files into one large file.<br/>
+    Also, it is better to use columnar dataformat (e.g., `Parquet`, `ORC`, `AVRO`, etc) instead of `JSON` in Amazon Athena.<br/>
+    To run these tasks periodically, the AWS Lambda function function that executes Athena's Create Table As Select (CTAS) query has been deployed.<br/>
+    Now we create an Athena table to query for large files that are created by periodical merge files task.
+    <pre>
+    CREATE EXTERNAL TABLE `mydatabase.restapi_access_log_parquet`(
+      `requestId` string,
+      `ip` string,
+      `user` string,
+      `requestTime` timestamp,
+      `httpMethod` string,
+      `resourcePath` string,
+      `status` string,
+      `protocol` string,
+      `responseLength` integer)
+    PARTITIONED BY (
+     `year` int,
+     `month` int,
+     `day` int,
+     `hour` int)
+    ROW FORMAT SERDE
+     'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+    STORED AS INPUTFORMAT
+     'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
+    OUTPUTFORMAT
+     'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+    LOCATION
+     's3://apigw-access-log-to-firehose-<i>xxxxx</i>/parquet-data'
+    </pre>
+    After creating the table and once merge files task is completed, the data is ready for querying.
+
+## Clean Up
+
+Delete the CloudFormation stack by running the below command.
+<pre>
+(.venv) $ cdk destroy --force --all
+</pre>
+
+## Useful commands
+
+ * `cdk ls`          list all stacks in the app
+ * `cdk synth`       emits the synthesized CloudFormation template
+ * `cdk deploy`      deploy this stack to your default AWS account/region
+ * `cdk diff`        compare deployed stack with current state
+ * `cdk docs`        open CDK documentation
+
+Enjoy!
+
+## References
+
+ * [Amazon API Gateway - Logging API calls to Kinesis Data Firehose](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-logging-to-kinesis.html)
+ * [Setting up CloudWatch logging for a REST API in API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-logging.html)
+ * [Building fine-grained authorization using Amazon Cognito, API Gateway, and IAM](https://aws.amazon.com/ko/blogs/security/building-fine-grained-authorization-using-amazon-cognito-api-gateway-and-iam/)
+ * [How to resolve "Invalid permissions on Lambda function" errors from API Gateway REST APIs](https://aws.amazon.com/premiumsupport/knowledge-center/api-gateway-rest-api-lambda-integrations/)
+ * [Amazon Athena Workshop](https://athena-in-action.workshop.aws/)
+ * [Curl Cookbook](https://catonmat.net/cookbooks/curl)
 
 ## Security
 
