@@ -37,7 +37,6 @@ merge_small_files_stack = MergeSmallFilesLambdaStack(app,
   firehose_stack.s3_dest_folder_name,
   athena_work_group_stack.athena_work_group_name
 )
-merge_small_files_stack.add_dependency(firehose_stack)
 merge_small_files_stack.add_dependency(athena_work_group_stack)
 
 athena_named_query_stack = AthenaNamedQueryStack(app,
