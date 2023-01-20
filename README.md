@@ -133,14 +133,14 @@ command.
      and click the **Run** button to execute the query.
 
      <pre>
-     CREATE DATABASE mydatabase
+     CREATE DATABASE IF NOT EXISTS mydatabase
      </pre>
 
     * (step 2) Create a table
 
       Copy the following query into the Athena query editor, replace the `xxxxxxx` in the last line under `LOCATION` with the string of your S3 bucket, and execute the query to create a new table.
       <pre>
-      CREATE EXTERNAL TABLE `mydatabase.restapi_access_log_json`(
+      CREATE EXTERNAL TABLE mydatabase.restapi_access_log_json (
         `requestId` string,
         `ip` string,
         `user` string,
@@ -176,6 +176,24 @@ command.
       </pre>
       After you run this command, the data is ready for querying.
 
+      Instead of `MSCK REPAIR TABLE` command, you can use the `ALTER TABLE ADD PARTITION` command to add each partition manually.
+
+      For example, to load the data in <pre>s3://apigw-access-log-to-firehose-<i>xxxxx</i>/json-data/year=2023/month=01/day=10/hour=06/</pre> you can run the following query.
+
+      <pre>
+      ALTER TABLE mydatabase.restapi_access_log_json ADD IF NOT EXISTS
+      PARTITION (year=2023, month=1, day=10, hour=6)
+      LOCATION 's3://apigw-access-log-to-firehose-<i>xxxxx</i>/json-data/year=2023/month=01/day=10/hour=06/';
+      </pre>
+
+    * (Optional) (step 4) Check partitions
+
+      Run the following query to list all the partitions in an Athena table in unsorted order.
+
+      <pre>
+      SHOW PARTITIONS mydatabase.restapi_access_log_json;
+      </pre>
+
 8. Run test query
 
    Enter the following SQL statement and execute the query.
@@ -192,7 +210,7 @@ command.
     To run these tasks periodically, the AWS Lambda function function that executes Athena's Create Table As Select (CTAS) query has been deployed.<br/>
     Now we create an Athena table to query for large files that are created by periodical merge files task.
     <pre>
-    CREATE EXTERNAL TABLE `mydatabase.restapi_access_log_parquet`(
+    CREATE EXTERNAL TABLE mydatabase.restapi_access_log_parquet (
       `requestId` string,
       `ip` string,
       `user` string,
