@@ -25,8 +25,8 @@ class KinesisFirehoseStack(Stack):
     S3_BUCKET_SUFFIX = ''.join(random.sample((string.ascii_lowercase + string.digits), k=7))
     s3_bucket = s3.Bucket(self, "s3bucket",
       removal_policy=cdk.RemovalPolicy.DESTROY, #XXX: Default: core.RemovalPolicy.RETAIN - The bucket will be orphaned
-      bucket_name="apigw-access-log-to-firehose-{region}-{suffix}".format(
-        region=cdk.Aws.REGION, suffix=S3_BUCKET_SUFFIX))
+      bucket_name="apigw-access-log-to-firehose-{region}-{account_id}-{suffix}".format(
+        region=cdk.Aws.REGION, account_id=cdk.Aws.ACCOUNT_ID, suffix=S3_BUCKET_SUFFIX))
 
     firehose_config = self.node.try_get_context('firehose')
 
