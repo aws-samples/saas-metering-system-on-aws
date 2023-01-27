@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-import random
-import string
-
 import aws_cdk as cdk
 
 from aws_cdk import (
@@ -13,7 +10,6 @@ from aws_cdk import (
 )
 from constructs import Construct
 
-random.seed(47)
 
 from aws_cdk.aws_kinesisfirehose import CfnDeliveryStream as firehose_cfn
 
@@ -22,13 +18,14 @@ class KinesisFirehoseStack(Stack):
   def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
     super().__init__(scope, construct_id, **kwargs)
 
-    S3_BUCKET_SUFFIX = ''.join(random.sample((string.ascii_lowercase + string.digits), k=7))
+    firehose_config = self.node.try_get_context('firehose')
+
+    S3_DEFAULT_BUCKET_NAME = "apigw-access-log-to-firehose-{region}-{account_id}".format(
+        region=cdk.Aws.REGION, account_id=cdk.Aws.ACCOUNT_ID)
+    s3_bucket_name = firehose_config.get('s3_bucket', S3_DEFAULT_BUCKET_NAME)
     s3_bucket = s3.Bucket(self, "s3bucket",
       removal_policy=cdk.RemovalPolicy.DESTROY, #XXX: Default: core.RemovalPolicy.RETAIN - The bucket will be orphaned
-      bucket_name="apigw-access-log-to-firehose-{region}-{account_id}-{suffix}".format(
-        region=cdk.Aws.REGION, account_id=cdk.Aws.ACCOUNT_ID, suffix=S3_BUCKET_SUFFIX))
-
-    firehose_config = self.node.try_get_context('firehose')
+      bucket_name=s3_bucket_name)
 
     FIREHOSE_STREAM_NAME = f"amazon-apigateway-{firehose_config['stream_name']}"
     FIREHOSE_BUFFER_SIZE = firehose_config['buffer_size_in_mbs']

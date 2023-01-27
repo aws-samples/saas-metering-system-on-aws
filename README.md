@@ -45,6 +45,35 @@ Once the virtualenv is activated, you can install the required dependencies.
 
 At this point you can now synthesize the CloudFormation template for this code.
 
+Before synthesizing the CloudFormation, you should set approperly the cdk context configuration file, `cdk.context.json`.
+
+In this project, we use the following cdk context:
+<pre>
+{
+  "vpc_name": "default",
+  "firehose": {
+    "stream_name": "random-gen",
+    "buffer_size_in_mbs": 128,
+    "buffer_interval_in_seconds": 300,
+    "s3_bucket": "apigw-access-log-to-firehose-<i>{region}</i>-<i>{account-id}</i>",
+    "s3_output_folder": "json-data",
+    "prefix": "json-data/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/hour=!{timestamp:HH}/",
+    "error_output_prefix": "error/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/hour=!{timestamp:HH}/!{firehose:error-output-type}"
+  },
+  "athena_work_group_name": "SaaSMeteringDemo",
+  "merge_small_files_lambda_env": {
+    "OLD_DATABASE": "mydatabase",
+    "OLD_TABLE_NAME": "restapi_access_log_json",
+    "NEW_DATABASE": "mydatabase",
+    "NEW_TABLE_NAME": "restapi_access_log_parquet",
+    "NEW_TABLE_S3_FOLDER_NAME": "parquet-data",
+    "COLUMN_NAMES": "requestId,ip,user,requestTime,httpMethod,resourcePath,status,protocol,responseLength"
+  }
+}
+</pre>
+
+:warning: You can set `s3_bucket` to store access logs for yourself. Otherwise, `{region}` and `{account-id}` of `s3_bucket` option will be replaced based on your AWS account profile.
+
 <pre>
 (.venv) $ export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
 (.venv) $ export CDK_DEFAULT_REGION=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | jq -r .region)
