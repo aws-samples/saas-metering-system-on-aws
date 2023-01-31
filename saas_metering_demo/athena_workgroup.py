@@ -17,12 +17,16 @@ class AthenaWorkGroupStack(Stack):
   def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
     super().__init__(scope, construct_id, **kwargs)
 
-    ATHENA_WORK_GROUP_NAME = self.node.try_get_context('athena_work_group_name')
+    athena_config = self.node.try_get_context('athena')
 
+    S3_DEFAULT_BUCKET_NAME = 'aws-athena-query-results-{region}-{account_id}'.format(
+        region=cdk.Aws.REGION, account_id=cdk.Aws.ACCOUNT_ID)
+    s3_bucket_name = athena_config.get('query_results_s3_bucket', S3_DEFAULT_BUCKET_NAME)
     s3_bucket = s3.Bucket(self, "s3bucket",
       removal_policy=cdk.RemovalPolicy.DESTROY, #XXX: Default: core.RemovalPolicy.RETAIN - The bucket will be orphaned
-      bucket_name='aws-athena-query-results-{region}-{account_id}'.format(
-        region=cdk.Aws.REGION, account_id=cdk.Aws.ACCOUNT_ID))
+      bucket_name=s3_bucket_name)
+
+    ATHENA_WORK_GROUP_NAME = athena_config['work_group_name']
 
     athena_cfn_work_group = aws_athena.CfnWorkGroup(self, 'AthenaCfnWorkGroup',
       name=ATHENA_WORK_GROUP_NAME,
