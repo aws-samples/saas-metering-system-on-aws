@@ -45,7 +45,7 @@ LOCATION
   '{s3_location}';
 
 /* Next we will load the partitions for this table */
-MSCK REPAIR TABLE mydatabase.web_log_json;
+MSCK REPAIR TABLE mydatabase.restapi_access_log_json;
 
 /* Check the partitions */
 SHOW PARTITIONS mydatabase.restapi_access_log_json;
@@ -59,7 +59,7 @@ SELECT COUNT(*) FROM mydatabase.restapi_access_log_json;
 
       # the properties below are optional
       description="Sample Hive DDL statement to create a partitioned table pointing to web log data (json)",
-      name="Create Web Log table (json) with partitions",
+      name="JSON Web Log table with partitions",
       work_group=athena_work_group_name
     )
 
@@ -106,7 +106,7 @@ SELECT COUNT(*) FROM mydatabase.restapi_access_log_parquet;
 
       # the properties below are optional
       description="Sample Hive DDL statement to create a partitioned table pointing to web log data (parquet)",
-      name="Create Web Log table (parquet) with partitions",
+      name="Parquet Web Log table with partitions",
       work_group=athena_work_group_name
     )
 

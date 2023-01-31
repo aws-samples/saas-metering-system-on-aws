@@ -46,7 +46,7 @@ def run_alter_table_add_partition(athena_client, basic_dt, database_name, table_
 
   output_location = '{}/alter_table_{}'.format(STAGING_OUTPUT_PREFIX, tmp_table_name)
 
-  alter_table_stmt = '''ALTER TABLE {database}.{table_name} ADD if NOT EXISTS'''.format(database=database_name,
+  alter_table_stmt = '''ALTER TABLE {database}.{table_name} ADD IF NOT EXISTS'''.format(database=database_name,
     table_name=table_name)
 
   partition_expr = '''PARTITION (year={year}, month={month}, day={day}, hour={hour}) LOCATION "{output_prefix}/year={year}/month={month:02}/day={day:02}/hour={hour:02}/"'''
@@ -180,11 +180,11 @@ if __name__ == '__main__':
     help='aws region name')
   parser.add_argument('--old-database', default='mydatabase',
     help='aws athena source database name used by ctas query')
-  parser.add_argument('--old-table-name', default='web_log_json',
+  parser.add_argument('--old-table-name', default='restapi_access_log_json',
     help='aws athena source table name used by ctas query')
   parser.add_argument('--new-database', default='mydatabase',
     help='aws athena target database name for merged files')
-  parser.add_argument('--new-table-name', default='ctas_web_log_parquet',
+  parser.add_argument('--new-table-name', default='restapi_access_log_parquet',
     help='aws athena target table name for merged files')
   parser.add_argument('--work-group', default='primary',
     help='aws athena work group')
