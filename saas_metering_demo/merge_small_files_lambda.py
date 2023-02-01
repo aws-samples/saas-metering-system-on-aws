@@ -109,6 +109,7 @@ class MergeSmallFilesLambdaStack(Stack):
       log_group_name=f"/aws/lambda/{self.stack_name}/MergeSmallFiles",
       retention=aws_logs.RetentionDays.THREE_DAYS)
     log_group.grant_write(merge_small_files_lambda_fn)
+    log_group.apply_removal_policy(cdk.RemovalPolicy.DESTROY)
 
     self.lambda_exec_role = merge_small_files_lambda_fn.role
 

@@ -86,6 +86,25 @@ Use `cdk deploy` command to create the stack shown above.
 (.venv) $ cdk deploy --require-approval never --all
 </pre>
 
+After all CDK stacks are successfully deployed, you need to grant appropriate LakeFormation permissions to the AWS Lambda function merging many small files to a few of large parquet files by running the following commands:
+<pre>
+(.venv) $ MERGE_SMALL_FILES_JOB_ROLE_ARN=$(aws cloudformation describe-stacks \
+            --stack-name RestApiAccessLogMergeSmallFiles | \
+            jq -r '.Stacks[0].Outputs[] | \
+            select(.OutputKey | endswith("LambdaExecRoleArn")) | \
+            .OutputValue')
+(.venv) $ aws lakeformation grant-permissions \
+              --principal DataLakePrincipalIdentifier=${MERGE_SMALL_FILES_JOB_ROLE_ARN} \
+              --permissions CREATE_TABLE DESCRIBE ALTER DROP \
+              --resource '{ "Database": { "Name": "<i>mydatabase</i>" } }'
+(.venv) $ aws lakeformation grant-permissions \
+              --principal DataLakePrincipalIdentifier=${MERGE_SMALL_FILES_JOB_ROLE_ARN} \
+              --permissions SELECT DESCRIBE ALTER INSERT DELETE DROP \
+                --resource '{ "Table": {"DatabaseName": "<i>mydatabase</i>", "TableWildcard": {}} }'
+</pre>
+
+:information_source: `mydatabase` is the database for access logs specified as `OLD_DATABASE` and `NEW_DATABASE` in the `cdk.context.json` file.
+
 To add additional dependencies, for example other CDK libraries, just add
 them to your `setup.py` file and rerun the `pip install -r requirements.txt`
 command.
@@ -101,8 +120,9 @@ command.
    </pre>
    Note: You can find `UserPoolClientId` with the following command:
    <pre>
-   aws cloudformation describe-stacks --stack-name <i>your-cloudformation-stack-name</i> | jq -r '.Stacks[0].Outputs | map(select(.OutputKey == "UserPoolClientId")) | .[0].OutputValue'
+   aws cloudformation describe-stacks --stack-name <i>RandomGenApiGw</i> | jq -r '.Stacks[0].Outputs[] | select(.OutputKey == "UserPoolClientId") | .OutputValue'
    </pre>
+   :information_source: `RandomGenApiGw` is the CDK stack name to create a user pool.
 
 2. Confirm the user, so they can log in:
    <pre>
@@ -155,17 +175,22 @@ command.
 
 7. Creating and loading a table with partitioned data in Amazon Athena
 
-   Go to [Athena](https://console.aws.amazon.com/athena/home) on the AWS Management console.<br/>
-   * (step 1) Create a database
+   Go to [Athena](https://console.aws.amazon.com/athena/home) on the AWS Management console.
 
-     In order to create a new database called `mydatabase`, enter the following statement in the Athena query editor
-     and click the **Run** button to execute the query.
+   * (step 1) Specify the workgroup to use
+
+     To run queries, switch to the appropriate workgroup like this:
+     ![amazon-athena-switching-to-workgroup](./assets/amazon-athena-switching-to-workgroup.png)
+
+   * (step 2) Create a database
+
+     In order to create a new database called `mydatabase`, enter the following statement in the Athena query editor and click the **Run** button to execute the query.
 
      <pre>
      CREATE DATABASE IF NOT EXISTS mydatabase
      </pre>
 
-    * (step 2) Create a table
+    * (step 3) Create a table
 
       Copy the following query into the Athena query editor, replace the `xxxxxxx` in the last line under `LOCATION` with the string of your S3 bucket, and execute the query to create a new table.
       <pre>
@@ -196,6 +221,18 @@ command.
       If the query is successful, a table named `restapi_access_log_json` is created and displayed on the left panel under the **Tables** section.
 
       If you get an error, check if (a) you have updated the `LOCATION` to the correct S3 bucket name, (b) you have mydatabase selected under the Database dropdown, and (c) you have `AwsDataCatalog` selected as the **Data source**.
+
+      :information_source: If you fail to create the table, give Athena users access permissions on `mydatabase` through [AWS Lake Formation](https://console.aws.amazon.com/lakeformation/home), or you can grant anyone using Athena to access `mydatabase` by running the following command:
+      <pre>
+      (.venv) $ aws lakeformation grant-permissions \
+                    --principal DataLakePrincipalIdentifier=arn:aws:iam::<i>{account-id}</i>:user/<i>example-user-id</i> \
+                    --permissions CREATE_TABLE DESCRIBE ALTER DROP \
+                    --resource '{ "Database": { "Name": "<i>mydatabase</i>" } }'
+      (.venv) $ aws lakeformation grant-permissions \
+                    --principal DataLakePrincipalIdentifier=arn:aws:iam::<i>{account-id}</i>:user/<i>example-user-id</i> \
+                    --permissions SELECT DESCRIBE ALTER INSERT DELETE DROP \
+                     --resource '{ "Table": {"DatabaseName": "<i>mydatabase</i>", "TableWildcard": {}} }'
+      </pre>
 
     * (step 3) Load the partition data
 
