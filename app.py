@@ -10,8 +10,7 @@ from saas_metering_demo import (
   AthenaWorkGroupStack,
   AthenaNamedQueryStack,
   MergeSmallFilesLambdaStack,
-  GlueCatalogDatabaseStack,
-  DataLakePermissionsStack
+  GlueCatalogDatabaseStack
 )
 
 AWS_ENV = cdk.Environment(account=os.getenv('CDK_DEFAULT_ACCOUNT'),
@@ -44,18 +43,13 @@ merge_small_files_stack.add_dependency(athena_work_group_stack)
 athena_databases = GlueCatalogDatabaseStack(app, 'GlueDatabasesOnAccessLogs')
 athena_databases.add_dependency(merge_small_files_stack)
 
-grant_lakeformation_permissions = DataLakePermissionsStack(app, 'GrantLFPermissionsOnLambdaRole',
-  merge_small_files_stack.lambda_exec_role
-)
-grant_lakeformation_permissions.add_dependency(athena_databases)
-
 athena_named_query_stack = AthenaNamedQueryStack(app,
   'SaaSMeteringAthenaNamedQueries',
   athena_work_group_stack.athena_work_group_name,
   merge_small_files_stack.s3_json_location,
   merge_small_files_stack.s3_parquet_location
 )
-athena_named_query_stack.add_dependency(grant_lakeformation_permissions)
+athena_named_query_stack.add_dependency(athena_databases)
 
 app.synth()
 
