@@ -126,3 +126,6 @@ class MergeSmallFilesLambdaStack(Stack):
       value=merge_small_files_lambda_fn.function_name,
       export_name=f'{self.stack_name}-MergeFilesLambdaFuncName')
 
+    cdk.CfnOutput(self, f'{self.stack_name}_LambdaExecRoleArn',
+      value=merge_small_files_lambda_fn.role.role_arn)
+
