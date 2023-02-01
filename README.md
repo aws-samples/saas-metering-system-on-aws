@@ -234,7 +234,7 @@ command.
                      --resource '{ "Table": {"DatabaseName": "<i>mydatabase</i>", "TableWildcard": {}} }'
       </pre>
 
-    * (step 3) Load the partition data
+    * (step 4) Load the partition data
 
       Run the following query to load the partition data.
       <pre>
@@ -252,7 +252,7 @@ command.
       LOCATION 's3://apigw-access-log-to-firehose-<i>xxxxx</i>/json-data/year=2023/month=01/day=10/hour=06/';
       </pre>
 
-    * (Optional) (step 4) Check partitions
+    * (Optional) (step 5) Check partitions
 
       Run the following query to list all the partitions in an Athena table in unsorted order.
 
