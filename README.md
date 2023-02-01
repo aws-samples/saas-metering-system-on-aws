@@ -231,7 +231,7 @@ command.
       (.venv) $ aws lakeformation grant-permissions \
                     --principal DataLakePrincipalIdentifier=arn:aws:iam::<i>{account-id}</i>:user/<i>example-user-id</i> \
                     --permissions SELECT DESCRIBE ALTER INSERT DELETE DROP \
-                     --resource '{ "Table": {"DatabaseName": "<i>mydatabase</i>", "TableWildcard": {}} }'
+                    --resource '{ "Table": {"DatabaseName": "<i>mydatabase</i>", "TableWildcard": {}} }'
       </pre>
 
     * (step 4) Load the partition data
