@@ -8,7 +8,9 @@
     "prefix": "json-data/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/hour=!{timestamp:HH}/",
     "error_output_prefix": "error/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/hour=!{timestamp:HH}/!{firehose:error-output-type}"
   },
-  "athena_work_group_name": "SaaSMeteringDemo",
+  "athena": {
+    "work_group_name": "SaaSMeteringDemo"
+  },
   "merge_small_files_lambda_env": {
     "OLD_DATABASE": "mydatabase",
     "OLD_TABLE_NAME": "restapi_access_log_json",

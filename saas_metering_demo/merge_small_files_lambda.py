@@ -118,6 +118,9 @@ class MergeSmallFilesLambdaStack(Stack):
       removal_policy=cdk.RemovalPolicy.DESTROY, #TODO: for testing
       retention=aws_logs.RetentionDays.THREE_DAYS)
     log_group.grant_write(merge_small_files_lambda_fn)
+    log_group.apply_removal_policy(cdk.RemovalPolicy.DESTROY)
+
+    self.lambda_exec_role = merge_small_files_lambda_fn.role
 
     cdk.CfnOutput(self, f'{self.stack_name}_MergeFilesFuncName',
       value=merge_small_files_lambda_fn.function_name,

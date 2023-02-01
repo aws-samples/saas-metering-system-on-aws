@@ -110,3 +110,40 @@ SELECT COUNT(*) FROM mydatabase.restapi_access_log_parquet;
       work_group=athena_work_group_name
     )
 
+    ctas_query = '''/* Drop a temp table */
+DROP TABLE IF EXISTS mydatabase.tmp_restapi_access_log_parquet_2023013111;
+
+/* Add partitions to the JSON table */
+ALTER TABLE mydatabase.restapi_access_log_json ADD IF NOT EXISTS 
+PARTITION (year=2023, month=1, day=31, hour=11) LOCATION "{s3_json_location}/year=2023/month=01/day=31/hour=11/"
+PARTITION (year=2023, month=1, day=31, hour=12) LOCATION "{s3_json_location}/year=2023/month=01/day=31/hour=12/"
+PARTITION (year=2023, month=1, day=31, hour=13) LOCATION "{s3_json_location}/year=2023/month=01/day=31/hour=13/";
+
+/* Add partitions to the Parquet table */
+ALTER TABLE mydatabase.restapi_access_log_parquet ADD IF NOT EXISTS 
+PARTITION (year=2023, month=1, day=31, hour=11) LOCATION "{s3_parquet_location}/year=2023/month=01/day=31/hour=11/"
+PARTITION (year=2023, month=1, day=31, hour=12) LOCATION "{s3_parquet_location}/parquet-data/year=2023/month=01/day=31/hour=12/"
+PARTITION (year=2023, month=1, day=31, hour=13) LOCATION "{s3_parquet_location}/year=2023/month=01/day=31/hour=13/";
+
+/* Run CTAS */
+CREATE TABLE mydatabase.tmp_restapi_access_log_parquet_2023013112
+WITH (
+external_location='{s3_parquet_location}/year=2023/month=01/day=31/hour=12/',
+format = 'PARQUET',
+parquet_compression = 'SNAPPY')
+AS SELECT requestId,ip,user,requestTime,httpMethod,resourcePath,status,protocol,responseLength
+FROM mydatabase.restapi_access_log_json
+WHERE year=2023 AND month=1 AND day=31 AND hour=12
+WITH DATA;
+'''.format(s3_json_location=s3_json_location, s3_parquet_location=s3_parquet_location)
+
+    named_ctas_query = aws_athena.CfnNamedQuery(self, "MyAthenaCfnNamedQuery3",
+      database="default",
+      query_string=ctas_query,
+
+      # the properties below are optional
+      description="Sample CTAS query to convert json to parquet",
+      name="CTAS Query on Web Log table",
+      work_group=athena_work_group_name
+    )
+
