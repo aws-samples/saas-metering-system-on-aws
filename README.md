@@ -231,10 +231,10 @@ command.
       (.venv) $ aws lakeformation grant-permissions \
                     --principal DataLakePrincipalIdentifier=arn:aws:iam::<i>{account-id}</i>:user/<i>example-user-id</i> \
                     --permissions SELECT DESCRIBE ALTER INSERT DELETE DROP \
-                     --resource '{ "Table": {"DatabaseName": "<i>mydatabase</i>", "TableWildcard": {}} }'
+                    --resource '{ "Table": {"DatabaseName": "<i>mydatabase</i>", "TableWildcard": {}} }'
       </pre>
 
-    * (step 3) Load the partition data
+    * (step 4) Load the partition data
 
       Run the following query to load the partition data.
       <pre>
@@ -252,7 +252,7 @@ command.
       LOCATION 's3://apigw-access-log-to-firehose-<i>xxxxx</i>/json-data/year=2023/month=01/day=10/hour=06/';
       </pre>
 
-    * (Optional) (step 4) Check partitions
+    * (Optional) (step 5) Check partitions
 
       Run the following query to list all the partitions in an Athena table in unsorted order.
 
@@ -273,7 +273,7 @@ command.
     When real-time incoming data is stored in S3 using Kinesis Data Firehose, files with small data size are created.<br/>
     To improve the query performance of Amazon Athena, it is recommended to combine small files into one large file.<br/>
     Also, it is better to use columnar dataformat (e.g., `Parquet`, `ORC`, `AVRO`, etc) instead of `JSON` in Amazon Athena.<br/>
-    To run these tasks periodically, the AWS Lambda function function that executes Athena's Create Table As Select (CTAS) query has been deployed.<br/>
+    To run these tasks periodically, the AWS Lambda function that executes Athena's Create Table As Select (CTAS) query has been deployed.<br/>
     Now we create an Athena table to query for large files that are created by periodical merge files task.
     <pre>
     CREATE EXTERNAL TABLE mydatabase.restapi_access_log_parquet (
