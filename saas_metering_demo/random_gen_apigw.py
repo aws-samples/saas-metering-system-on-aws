@@ -61,20 +61,22 @@ class RandomGenApiStack(Stack):
 
     random_gen_api_log_group = aws_logs.LogGroup(self, 'RandomGenApiLogs')
 
+    #XXX: For more information about $context variables, see
+    # https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html#context-variable-reference
     #XXX: Using aws_apigateway.AccessLogFormat.custom(json.dumps({..}))
     # or aws_apigateway.AccessLogFormat.json_with_standard_fields()
     # make json's all attributes string data type even if they are numbers
     # So, it's better to define access log format in the string like this.
     # Don't forget the new line to make JSON Lines.
-    access_log_format = '{"requestId": "$context.requestId",\
+    access_log_format = '''{"requestId": "$context.requestId",\
  "ip": "$context.identity.sourceIp",\
- "user": "$context.identity.user",\
+ "user": "$context.authorizer.claims['cognito:username']",\
  "requestTime": $context.requestTimeEpoch,\
  "httpMethod": "$context.httpMethod",\
  "resourcePath": "$context.resourcePath",\
  "status": $context.status,\
  "protocol": "$context.protocol",\
- "responseLength": $context.responseLength}\n'
+ "responseLength": $context.responseLength}\n'''
 
     random_strings_rest_api = aws_apigateway.LambdaRestApi(self, 'RandomStringsApi',
       rest_api_name="random-strings",

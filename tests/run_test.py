@@ -33,6 +33,7 @@ def main():
     help='aws region name (default: us-east-1)')
   parser.add_argument('--auth-token', help='authorization token to access Rest APIs')
   parser.add_argument('--max-count', default=10, type=int, help='The max number of trials')
+  parser.add_argument('--api-stage', default='prod', help='api stage name: [prod, dev] (default: prod)')
   parser.add_argument('--dry-run', action='store_true')
 
   options = parser.parse_args()
@@ -41,7 +42,7 @@ def main():
   REGION = options.region_name
   MY_ID_TOKEN = options.auth_token
 
-  URL = f'https://{EXECUTION_ID}.execute-api.{REGION}.amazonaws.com/prod/random/strings'
+  URL = f'https://{EXECUTION_ID}.execute-api.{REGION}.amazonaws.com/{options.api_stage}/random/strings'
 
   for _ in range(options.max_count):
     payload = gen_params()
