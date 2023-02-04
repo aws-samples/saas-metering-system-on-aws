@@ -86,6 +86,33 @@ Use `cdk deploy` command to create the stack shown above.
 (.venv) $ cdk deploy --require-approval never --all
 </pre>
 
+After all CDK stacks are successfully deployed, make sure that the AWS Lambda function merging many small files to a few of large parquet files is granted appropriate LakeFormation permissions.
+
+Go checking [Amazon Lake Formation Web console](https://console.aws.amazon.com/lakeformation/home?#permissions-list)
+
+![data-lake-formation-permissions](./assets/data-lake-formation-permissions.png)
+
+Otherwise, you need to grant appropriate LakeFormation permissions to the AWS Lambda function merging many small files to a few of large parquet files by running the following commands:
+<pre>
+(.venv) $ MERGE_SMALL_FILES_JOB_ROLE_ARN=$(aws cloudformation describe-stacks \
+            --stack-name RestApiAccessLogMergeSmallFiles | \
+            jq -r '.Stacks[0].Outputs[] | \
+            select(.OutputKey | endswith("LambdaExecRoleArn")) | \
+            .OutputValue')
+(.venv) $ aws lakeformation grant-permissions \
+              --principal DataLakePrincipalIdentifier=${MERGE_SMALL_FILES_JOB_ROLE_ARN} \
+              --permissions CREATE_TABLE DESCRIBE ALTER DROP \
+              --resource '{ "Database": { "Name": "<i>mydatabase</i>" } }'
+(.venv) $ aws lakeformation grant-permissions \
+              --principal DataLakePrincipalIdentifier=${MERGE_SMALL_FILES_JOB_ROLE_ARN} \
+              --permissions SELECT DESCRIBE ALTER INSERT DELETE DROP \
+              --resource '{ "Table": {"DatabaseName": "<i>mydatabase</i>", "TableWildcard": {}} }'
+</pre>
+
+> :information_source: `mydatabase` is the database for access logs specified as `OLD_DATABASE` and `NEW_DATABASE` in the `cdk.context.json` file.
+
+> :information_source: `RestApiAccessLogMergeSmallFiles` is the CDK Stack name to create the lambda function merging small files to large one by running Amazon Athena Create Table As Select(CTAS) query.
+
 To add additional dependencies, for example other CDK libraries, just add
 them to your `setup.py` file and rerun the `pip install -r requirements.txt`
 command.
