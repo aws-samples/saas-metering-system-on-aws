@@ -5,3 +5,4 @@ from .athena_workgroup import AthenaWorkGroupStack
 from .athena_named_query import AthenaNamedQueryStack
 from .merge_small_files_lambda import MergeSmallFilesLambdaStack
 from .glue_catalog_database import GlueCatalogDatabaseStack
+from .lake_formation import DataLakePermissionsStack
