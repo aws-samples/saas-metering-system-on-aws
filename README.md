@@ -86,25 +86,6 @@ Use `cdk deploy` command to create the stack shown above.
 (.venv) $ cdk deploy --require-approval never --all
 </pre>
 
-After all CDK stacks are successfully deployed, you need to grant appropriate LakeFormation permissions to the AWS Lambda function merging many small files to a few of large parquet files by running the following commands:
-<pre>
-(.venv) $ MERGE_SMALL_FILES_JOB_ROLE_ARN=$(aws cloudformation describe-stacks \
-            --stack-name RestApiAccessLogMergeSmallFiles | \
-            jq -r '.Stacks[0].Outputs[] | \
-            select(.OutputKey | endswith("LambdaExecRoleArn")) | \
-            .OutputValue')
-(.venv) $ aws lakeformation grant-permissions \
-              --principal DataLakePrincipalIdentifier=${MERGE_SMALL_FILES_JOB_ROLE_ARN} \
-              --permissions CREATE_TABLE DESCRIBE ALTER DROP \
-              --resource '{ "Database": { "Name": "<i>mydatabase</i>" } }'
-(.venv) $ aws lakeformation grant-permissions \
-              --principal DataLakePrincipalIdentifier=${MERGE_SMALL_FILES_JOB_ROLE_ARN} \
-              --permissions SELECT DESCRIBE ALTER INSERT DELETE DROP \
-                --resource '{ "Table": {"DatabaseName": "<i>mydatabase</i>", "TableWildcard": {}} }'
-</pre>
-
-:information_source: `mydatabase` is the database for access logs specified as `OLD_DATABASE` and `NEW_DATABASE` in the `cdk.context.json` file.
-
 To add additional dependencies, for example other CDK libraries, just add
 them to your `setup.py` file and rerun the `pip install -r requirements.txt`
 command.
@@ -113,8 +94,10 @@ command.
 
 1. Register a Cognito User, using the aws cli
    <pre>
+   USER_POOL_CLIENT_ID=$(aws cloudformation describe-stacks --stack-name <i>RandomGenApiGw</i> | jq -r '.Stacks[0].Outputs[] | select(.OutputKey == "UserPoolClientId") | .OutputValue')
+
    aws cognito-idp sign-up \
-     --client-id <i>your-user-pool-client-id</i> \
+     --client-id <i>${USER_POOL_CLIENT_ID}</i> \
      --username "<i>user-email-id@domain.com</i>" \
      --password "<i>user-password</i>"
    </pre>
@@ -126,8 +109,10 @@ command.
 
 2. Confirm the user, so they can log in:
    <pre>
+   USER_POOL_ID=$(aws cloudformation describe-stacks --stack-name <i>RandomGenApiGw</i> | jq -r '.Stacks[0].Outputs | map(select(.OutputKey == "UserPoolId")) | .[0].OutputValue')
+
    aws cognito-idp admin-confirm-sign-up \
-     --user-pool-id <i>your-user-pool-id</i> \
+     --user-pool-id <i>${USER_POOL_ID}</i> \
      --username "<i>user-email-id@domain.com</i>"
    </pre>
    At this point if you look at your cognito user pool, you would see that the user is confirmed and ready to log in:
@@ -135,15 +120,17 @@ command.
 
    Note: You can find `UserPoolId` with the following command:
    <pre>
-   aws cloudformation describe-stacks --stack-name <i>your-cloudformation-stack-name</i> | jq -r '.Stacks[0].Outputs | map(select(.OutputKey == "UserPoolId")) | .[0].OutputValue'
+   aws cloudformation describe-stacks --stack-name <i>RandomGenApiGw</i> | jq -r '.Stacks[0].Outputs | map(select(.OutputKey == "UserPoolId")) | .[0].OutputValue'
    </pre>
 
 3. Log the user in to get an identity JWT token
    <pre>
+   USER_POOL_CLIENT_ID=$(aws cloudformation describe-stacks --stack-name <i>RandomGenApiGw</i> | jq -r '.Stacks[0].Outputs[] | select(.OutputKey == "UserPoolClientId") | .OutputValue')
+
    aws cognito-idp initiate-auth \
      --auth-flow USER_PASSWORD_AUTH \
      --auth-parameters USERNAME="<i>user-email-id@domain.com</i>",PASSWORD="<i>user-password</i>" \
-     --client-id <i>your-user-pool-client-id</i>
+     --client-id <i>${USER_POOL_CLIENT_ID}</i>
    </pre>
 
 4. Invoke REST API method
@@ -169,7 +156,7 @@ command.
 
 6. Check the access logs in S3
 
-   After 5~10 minutes, you can see that the access logs have been delivered by **Kinesis Data Firehose** to **S3** and stored in a folder structure by year, month, day, and hour.
+   After `5~10` minutes, you can see that the access logs have been delivered by **Kinesis Data Firehose** to **S3** and stored in a folder structure by year, month, day, and hour.
 
    ![amazon-apigatewy-access-log-in-s3](./assets/amazon-apigatewy-access-log-in-s3.png)
 
@@ -328,6 +315,7 @@ Enjoy!
  * [Building fine-grained authorization using Amazon Cognito, API Gateway, and IAM (2021-05-21)](https://aws.amazon.com/ko/blogs/security/building-fine-grained-authorization-using-amazon-cognito-api-gateway-and-iam/)
  * [How to resolve "Invalid permissions on Lambda function" errors from API Gateway REST APIs](https://aws.amazon.com/premiumsupport/knowledge-center/api-gateway-rest-api-lambda-integrations/)
  * [AWS Lake Formation - Create a data lake administrator](https://docs.aws.amazon.com/lake-formation/latest/dg/getting-started-setup.html#create-data-lake-admin)
+ * [AWS Lake Formation Permissions Reference](https://docs.aws.amazon.com/lake-formation/latest/dg/lf-permissions-reference.html)
  * [Tutorial: Schedule AWS Lambda Functions Using CloudWatch Events](https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/RunLambdaSchedule.html)
  * [Amazon Athena Workshop](https://athena-in-action.workshop.aws/)
  * [Curl Cookbook](https://catonmat.net/cookbooks/curl)
