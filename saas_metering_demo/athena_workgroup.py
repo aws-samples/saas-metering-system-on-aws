@@ -45,9 +45,11 @@ class AthenaWorkGroupStack(Stack):
         # If set to "true", the settings for the workgroup override client-side settings.
         # If set to "false", client-side settings are used.
         enforce_work_group_configuration=False,
+        # For more information about Amazon Athena engine version,
+        # see https://docs.aws.amazon.com/athena/latest/ug/engine-versions-reference.html
         engine_version=aws_athena.CfnWorkGroup.EngineVersionProperty(
-          effective_engine_version='Athena engine version 2',
-          selected_engine_version='Athena engine version 2'
+          effective_engine_version='Athena engine version 3',
+          selected_engine_version='Athena engine version 3'
         ),
         publish_cloud_watch_metrics_enabled=True,
         requester_pays_enabled=True,
