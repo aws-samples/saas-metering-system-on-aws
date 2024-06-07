@@ -1,14 +1,15 @@
 
 # SaaS Metering system on AWS demo project!
 
-This SaaS Metering system allows Software-as-a-Service (SaaS) providers to accurately meter and bill their customers based on precise API usage. This fully-managed service streamlines tracking and monetizing SaaS offerings by enabling usage-based billing models.
+This SaaS Metering system allows Software-as-a-Service (SaaS) providers to accurately meter and bill their customers based on precise **API usage**. This fully-managed service streamlines tracking and monetizing SaaS offerings by enabling **usage-based billing models**.
 
-Key features:
+**Key features**:
 
-1. Usage-Based Billing: Bill customers only for what they use based on API calls, data transfers, or custom metrics aligned with your business model.
-2. Seamless Integration: Integrate with existing AWS infrastructure to instrument applications and capture real-time usage data.
-3. Automated Billing: Automate billing and invoicing processes, reducing overhead.
-4. Scalability and Reliability: Highly scalable and reliable service to support SaaS business growth.
+1. **Usage-Based Billing**: Bill customers only for what they use based on API calls, data transfers, or custom metrics aligned with your business model.
+2. **Seamless Integration**: Integrate with existing AWS infrastructure to instrument applications and capture real-time usage data.
+3. **Automated Billing**: Automate billing and invoicing processes, reducing overhead.
+4. **Scalability and Reliability**: Highly scalable and reliable service to support SaaS business growth.
+5. **Flexible Pricing Models**: Easily extensible to support pay-per-use, tiered pricing, and custom pricing rules.
 
 This SaaS Metering system can unlock new revenue streams, improve customer satisfaction, and provide a competitive edge in the SaaS market through accurate usage-based billing. Getting started is straightforward with this solution. SaaS providers can now streamline billing processes, optimize pricing strategies, and drive business growth with this new AWS service.
 
