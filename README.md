@@ -62,7 +62,6 @@ Before synthesizing the CloudFormation, you should set approperly the cdk contex
 In this project, we use the following cdk context:
 <pre>
 {
-  "vpc_name": "default",
   "firehose": {
     "stream_name": "random-gen",
     "buffer_size_in_mbs": 128,
