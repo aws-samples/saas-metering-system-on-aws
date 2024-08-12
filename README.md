@@ -83,7 +83,7 @@ In this project, we use the following cdk context:
 }
 </pre>
 
-:warning: You can set `s3_bucket` to store access logs for yourself. Otherwise, `{region}` and `{account-id}` of `s3_bucket` option will be replaced based on your AWS account profile.
+:warning: You can set `s3_bucket` to store access logs for yourself. Otherwise, an `apigw-access-log-to-firehose-{region}-{account-id}` bucket will be created automatically. The `{region}` and `{account-id}` of `s3_bucket` option are replaced based on your AWS account profile. (e.g., `apigw-access-log-to-firehose-us-east-1-123456789012`)
 
 <pre>
 (.venv) $ export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
