@@ -174,9 +174,8 @@ command.
 5. Generate test requests and run them.
    <pre>
    $ source .venv/bin/activate
-   (.venv) $ pip install "requests==2.28.1"
-   (.venv) $ python tests/run_test.py --execution-id <i>{your-api-gateway-execution-id}</i> \
-                                      --region-name <i>{region}</i> \
+   (.venv) $ pip install -U "requests==2.31.0" "boto3==1.34.61"
+   (.venv) $ python tests/run_test.py --apigw-invoke-url 'https://<i>{your-api-gateway-id}</i>.execute-api.<i>{region}</i>.amazonaws.com/prod' \
                                       --auth-token ${MY_ID_TOKEN} \
                                       --max-count 10
    </pre>
