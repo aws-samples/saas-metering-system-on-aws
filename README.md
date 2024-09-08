@@ -173,8 +173,9 @@ command.
 
 4. Invoke REST API method
    <pre>
+   $ APIGW_INVOKE_URL=$(aws cloudformation describe-stacks --stack-name <i>RandomGenApiGw</i> | jq -r '.Stacks[0].Outputs | map(select(.OutputKey == "RestApiEndpoint")) | .[0].OutputValue')
    $ MY_ID_TOKEN=$(aws cognito-idp initiate-auth --auth-flow USER_PASSWORD_AUTH --auth-parameters USERNAME="<i>user-email-id@domain.com</i>",PASSWORD="<i>user-password</i>" --client-id <i>your-user-pool-client-id</i> | jq -r '.AuthenticationResult.IdToken')
-   $ curl -X GET 'https://<i>{your-api-gateway-id}</i>.execute-api.<i>{region}</i>.amazonaws.com/prod/random/strings?len=7' --header "Authorization: ${MY_ID_TOKEN}"
+   $ curl -X GET "${APIGW_INVOKE_URL}/random/strings?len=7" --header "Authorization: ${MY_ID_TOKEN}"
    </pre>
 
    The response is:
