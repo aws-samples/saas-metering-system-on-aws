@@ -31,18 +31,24 @@ def main():
   parser.add_argument('--execution-id', help='api gateway execution-id')
   parser.add_argument('--region-name', action='store', default='us-east-1',
     help='aws region name (default: us-east-1)')
-  parser.add_argument('--auth-token', help='authorization token to access Rest APIs')
+  parser.add_argument('--auth-token', required=True, help='authorization token to access Rest APIs')
   parser.add_argument('--max-count', default=10, type=int, help='The max number of trials')
   parser.add_argument('--api-stage', default='prod', help='api stage name: [prod, dev] (default: prod)')
+  parser.add_argument('--apigw-invoke-url', help='apigateway invoke url ex) https://0ahgq23uc8.execute-api.us-east-1.amazonaws.com/prod')
   parser.add_argument('--dry-run', action='store_true')
 
   options = parser.parse_args()
 
-  EXECUTION_ID = options.execution_id
-  REGION = options.region_name
   MY_ID_TOKEN = options.auth_token
 
-  URL = f'https://{EXECUTION_ID}.execute-api.{REGION}.amazonaws.com/{options.api_stage}/random/strings'
+  if options.apigw_invoke_url:
+    invoke_url = options.apigw_invoke_url
+  else:
+    EXECUTION_ID = options.execution_id
+    REGION = options.region_name
+    invoke_url = f'https://{EXECUTION_ID}.execute-api.{REGION}.amazonaws.com/{options.api_stage}'
+
+  URL = f"{invoke_url.rstrip('/')}/random/strings"
 
   for _ in range(options.max_count):
     payload = gen_params()
