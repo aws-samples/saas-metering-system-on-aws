@@ -33,7 +33,7 @@ class AthenaWorkGroupStack(Stack):
 
       # the properties below are optional
       description='workgroup for developer',
-      recursive_delete_option=False,
+      recursive_delete_option=True,
       state='ENABLED', # [DISABLED, ENABLED]
       tags=[cdk.CfnTag(
         key='Name',
@@ -58,9 +58,10 @@ class AthenaWorkGroupStack(Stack):
         )
       )
     )
+    athena_cfn_work_group.apply_removal_policy(cdk.RemovalPolicy.DESTROY)
 
     self.athena_work_group_name = athena_cfn_work_group.name
 
-    cdk.CfnOutput(self, 'f{self.stack_name}_AthenaWorkGroupName', value=self.athena_work_group_name,
+    cdk.CfnOutput(self, 'AthenaWorkGroupName', value=self.athena_work_group_name,
       export_name=f'{self.stack_name}-AthenaWorkGroupName')
 
