@@ -155,6 +155,6 @@ class RandomGenApiStack(Stack):
     cdk.CfnOutput(self, 'RestApiAccessLogToFirehoseARN', value=firehose_arn)
     cdk.CfnOutput(self, 'RestApiAccessLogGroupName', value=random_gen_api_log_group.log_group_name)
     cdk.CfnOutput(self, 'RestApiEndpoint',
-      value=f'https://{random_strings_rest_api.rest_api_id}.execute-api.{cdk.Aws.REGION}.amazonaws.com/{random_strings_rest_api_stage.stage_name}/',
+      value=f'https://{random_strings_rest_api.rest_api_id}.execute-api.{cdk.Aws.REGION}.amazonaws.com/{random_strings_rest_api_stage.stage_name}',
       export_name=f'RestApiEndpoint-Prod')
 
