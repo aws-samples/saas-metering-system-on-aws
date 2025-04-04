@@ -1,0 +1,23 @@
+{
+  "acknowledged-issue-numbers": [
+    32775
+  ],
+  "data_firehose_configuration": {
+    "stream_name": "random-gen",
+    "buffering_hints": {
+      "interval_in_seconds": 60,
+      "size_in_mbs": 128
+    },
+    "transform_records_with_aws_lambda": {
+      "buffer_size": 3,
+      "buffer_interval": 300,
+      "number_of_retries": 3
+    },
+    "destination_iceberg_table_configuration": {
+      "database_name": "restapi_access_log_iceberg_db",
+      "table_name": "restapi_access_log_iceberg"
+    },
+    "output_prefix": "restapi_access_log_iceberg_db/restapi_access_log_iceberg",
+    "error_output_prefix": "error/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/hour=!{timestamp:HH}/!{firehose:error-output-type}"
+  }
+}
