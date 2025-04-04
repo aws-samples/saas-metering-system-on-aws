@@ -101,7 +101,7 @@ After all CDK stacks are successfully deployed, make sure that the AWS Lambda fu
 
 Go checking [Amazon Lake Formation Web console](https://console.aws.amazon.com/lakeformation/home?#permissions-list)
 
-![data-lake-formation-permissions](./assets/data-lake-formation-permissions.png)
+![data-lake-formation-permissions](../assets/data-lake-formation-permissions.png)
 
 Otherwise, you need to grant appropriate LakeFormation permissions to the AWS Lambda function merging many small files to a few of large parquet files by running the following commands:
 <pre>
@@ -154,7 +154,7 @@ command.
      --username "<i>user-email-id@domain.com</i>"
    </pre>
    At this point if you look at your cognito user pool, you would see that the user is confirmed and ready to log in:
-   ![amazon-cognito-user-pool-users](./assets/amazon-cognito-user-pool-users.png)
+   ![amazon-cognito-user-pool-users](../assets/amazon-cognito-user-pool-users.png)
 
    Note: You can find `UserPoolId` with the following command:
    <pre>
@@ -186,8 +186,8 @@ command.
 5. Generate test requests and run them.
    <pre>
    $ source .venv/bin/activate
-   (.venv) $ pip install -U "requests==2.31.0" "boto3==1.34.61"
-   (.venv) $ python tests/run_test.py --apigw-invoke-url 'https://<i>{your-api-gateway-id}</i>.execute-api.<i>{region}</i>.amazonaws.com/prod' \
+   (.venv) $ pip install -U "requests>=2.31.0" "boto3>=1.34.61"
+   (.venv) $ python ../tests/run_test.py --apigw-invoke-url 'https://<i>{your-api-gateway-id}</i>.execute-api.<i>{region}</i>.amazonaws.com/prod' \
                                       --auth-token ${MY_ID_TOKEN} \
                                       --max-count 10
    </pre>
@@ -196,7 +196,7 @@ command.
 
    After `5~10` minutes, you can see that the access logs have been delivered by **Kinesis Data Firehose** to **S3** and stored in a folder structure by year, month, day, and hour.
 
-   ![amazon-apigatewy-access-log-in-s3](./assets/amazon-apigatewy-access-log-in-s3.png)
+   ![amazon-apigatewy-access-log-in-s3](../assets/amazon-apigatewy-access-log-in-s3.png)
 
 7. Creating and loading a table with partitioned data in Amazon Athena
 
@@ -205,7 +205,7 @@ command.
    * (step 1) Specify the workgroup to use
 
      To run queries, switch to the appropriate workgroup like this:
-     ![amazon-athena-switching-to-workgroup](./assets/amazon-athena-switching-to-workgroup.png)
+     ![amazon-athena-switching-to-workgroup](../assets/amazon-athena-switching-to-workgroup.png)
 
    * (step 2) Create a database
 
