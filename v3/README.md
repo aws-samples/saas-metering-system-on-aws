@@ -299,6 +299,12 @@ Enjoy!
  * [AWS Lake Formation - Create a data lake administrator](https://docs.aws.amazon.com/lake-formation/latest/dg/getting-started-setup.html#create-data-lake-admin)
  * [AWS Lake Formation Permissions Reference](https://docs.aws.amazon.com/lake-formation/latest/dg/lf-permissions-reference.html)
  * [Tutorial: Schedule AWS Lambda Functions Using CloudWatch Events](https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/RunLambdaSchedule.html)
+ * [Streaming data to S3 tables with Amazon Data Firehose](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-tables-integrating-firehose.html)
+ * [(AWS Blog) Build a data lake for streaming data with Amazon S3 Tables and Amazon Data Firehose (2025-03-04)](https://aws.amazon.com/blogs/storage/build-a-data-lake-for-streaming-data-with-amazon-s3-tables-and-amazon-data-firehose/)
+ * [Simplify data lakes at scale with Amazon S3 Tables](https://community.aws/content/2unzJtZ4QhdCa5dVUnPFCohLcHi)
+ * [AWS CLI Command Reference](https://awscli.amazonaws.com/v2/documentation/api/latest/index.html)
+   * [aws s3tables](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/s3tables/index.html)
+   * [aws glue](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/glue/index.html)
  * [Amazon Athena Workshop](https://athena-in-action.workshop.aws/)
  * [Curl Cookbook](https://catonmat.net/cookbooks/curl)
 
