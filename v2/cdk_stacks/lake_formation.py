@@ -18,7 +18,7 @@ class DataLakePermissionsStack(Stack):
 
     data_firehose_configuration = self.node.try_get_context("data_firehose_configuration")
     dest_iceberg_table_config = data_firehose_configuration["destination_iceberg_table_configuration"]
-    database_name=dest_iceberg_table_config["database_name"]
+    database_name = dest_iceberg_table_config["database_name"]
 
     #XXXX: The role assumed by cdk is not a data lake administrator.
     # So, deploying PrincipalPermissions meets the error such as:

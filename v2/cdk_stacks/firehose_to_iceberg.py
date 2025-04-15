@@ -22,8 +22,6 @@ class FirehoseToIcebergStack(Stack):
     super().__init__(scope, construct_id, **kwargs)
 
     data_firehose_configuration = self.node.try_get_context("data_firehose_configuration")
-
-    # delivery_stream_name = data_firehose_configuration['stream_name']
     delivery_stream_name = f"amazon-apigateway-{data_firehose_configuration['stream_name']}"
     assert delivery_stream_name.startswith('amazon-apigateway-'), "Kinesis Firehose delivery stream name must begin with the characters 'amazon-apigateway-'"
 
