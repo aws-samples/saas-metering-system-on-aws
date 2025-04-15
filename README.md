@@ -9,6 +9,7 @@ Below diagram shows what we are implementing.
 |---------|----------------------|------|
 | [SaaS Metering system using Parquet](./v1) | ![](./v1/saas-metering-arch.svg) | Amazon API Gateway, Amazon Data Firehose, Amazon S3 + Parquet, Amazon Athena, AWS Lambda, Amazon Event Bridge |
 | [SaaS Metering system using Apache Iceberg table](./v2) | ![](./v2/saas-metering-iceberg-arch.svg) | Amazon API Gateway, Amazon Data Firehose, Amazon S3 + Apache Iceberg, Amazon Athena, AWS Lambda |
+| [SaaS Metering system using Amazon S3Tables](./v3) | ![](./v3/saas-metering-s3tables-arch.svg) | Amazon API Gateway, Amazon Data Firehose, Amazon S3Tables, Amazon Athena, AWS Lambda |
 
 ## Security
 

@@ -13,11 +13,15 @@ from constructs import Construct
 from aws_cdk.aws_kinesisfirehose import CfnDeliveryStream as cfn_delivery_stream
 
 
-class FirehoseToIcebergStack(Stack):
+class FirehoseToS3TablesStack(Stack):
 
-  def __init__(self, scope: Construct, construct_id: str,
-               data_transform_lambda_fn, s3_bucket,
-               firehose_role, **kwargs) -> None:
+  def __init__(self,
+               scope: Construct,
+               construct_id: str,
+               data_transform_lambda_fn,
+               s3_bucket,
+               firehose_role,
+               **kwargs) -> None:
 
     super().__init__(scope, construct_id, **kwargs)
 
@@ -36,7 +40,6 @@ class FirehoseToIcebergStack(Stack):
     firehose_lambda_buffer_interval = transform_records_with_aws_lambda["buffer_interval"]
     firehose_lambda_number_of_retries = transform_records_with_aws_lambda["number_of_retries"]
 
-    s3_output_prefix = data_firehose_configuration["output_prefix"]
     s3_error_output_prefix = data_firehose_configuration["error_output_prefix"]
 
     lambda_proc = cfn_delivery_stream.ProcessorProperty(
@@ -94,11 +97,10 @@ class FirehoseToIcebergStack(Stack):
         cloud_watch_logging_options={
           "enabled": True,
           "logGroupName": firehose_log_group_name,
-          "logStreamName": "DestinationDelivery"
+          "logStreamName": "BackupDelivery"
         },
         compression_format="UNCOMPRESSED", # [GZIP | HADOOP_SNAPPY | Snappy | UNCOMPRESSED | ZIP]
         error_output_prefix=s3_error_output_prefix,
-        prefix=s3_output_prefix,
       ),
       buffering_hints={
         "intervalInSeconds": firehose_buffer_interval,
